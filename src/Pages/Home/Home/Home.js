@@ -5,19 +5,18 @@ import MakeAppointment from '../MakeAppointment/MakeAppointment';
 import Services from '../Services/Services';
 import Testimonials from '../Testimonial/Testimonials';
 import Treatment from '../Treatment/Treatment';
-import bg from '../../../assets/images/bg.png'
+import ContactForm from '../ContactForm/ContactForm';
 
 const Home = () => {
     return (
         <div className='mx-5'>
-            <section style={{ background: `url(${bg})` }}>
-                <Banner />
-                <InfoCards />
-            </section>
+            <Banner />
+            <InfoCards />
             <Services />
             <Treatment />
             <MakeAppointment />
             <Testimonials />
+            <ContactForm />
         </div>
     );
 };
