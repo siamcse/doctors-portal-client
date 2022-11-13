@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import React from 'react';
+import Swal from 'sweetalert2'
 
 const BookingModal = ({ treatment, selectedDate, setTreatment }) => {
     const { name: treatmentName, slots } = treatment;
@@ -27,6 +28,11 @@ const BookingModal = ({ treatment, selectedDate, setTreatment }) => {
 
         //modal exit after submit
         setTreatment(null);
+        Swal.fire(
+            'Thank You!',
+            `You booking an appointment on date ${date} at ${slot}!`,
+            'success'
+        )
     }
     return (
         <>
