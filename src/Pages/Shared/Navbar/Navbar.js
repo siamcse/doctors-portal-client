@@ -1,15 +1,30 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { AuthContext } from '../../../contexts/AuthProvider';
 
 const Navbar = () => {
-    const className = 'bg-accent text-md text-white rounded-md'
+    const { user, logOut } = useContext(AuthContext);
+
+    const className = 'bg-accent text-md text-white rounded-md';
+
+    const handleLogOut = () => {
+        logOut()
+            .then(() => { })
+            .catch(e => console.error(e))
+    }
     const menuItems = <React.Fragment>
         <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/'>Home</NavLink></li>
         <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/about'>About</NavLink></li>
         <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/appointment'>Appintment</NavLink></li>
         <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/reviews'>Reviews</NavLink></li>
-        <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/contactus'>Contact Us</NavLink></li>
-        <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/login'>Login</NavLink></li>
+
+        {user?.uid ?
+            <>
+                <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/dashboard'>Dashboard</NavLink></li>
+                <li><button onClick={handleLogOut}>Sign Out</button></li>
+            </>
+            :
+            <li><NavLink className={({ isActive }) => isActive ? className : undefined} to='/login'>Login</NavLink></li>}
     </React.Fragment>
     return (
         <div className="navbar bg-base-100">
