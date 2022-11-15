@@ -4,6 +4,9 @@ import chair from '../../../assets/images/chair.png';
 import bg from '../../../assets/images/bg.png';
 
 const AppointmentBanner = ({ selectedDate, setSelectedDate }) => {
+    // for date range 
+    // const [range, setRange] = useState(isDateRange);
+    // console.log(range?.from);
 
     return (
         <header className='pt-16 md:py-60' style={{
@@ -17,8 +20,22 @@ const AppointmentBanner = ({ selectedDate, setSelectedDate }) => {
                             mode='single'
                             selected={selectedDate}
                             onSelect={setSelectedDate}
+
+                        // for date range 
+                        // mode="range"
+                        // min={3}
+                        // max={6}
+                        // selected={range}
+                        // onSelect={setRange}
                         />
                     </div>
+                    {/* for date range  */}
+                    {/* {
+                        range?.from && range?.to ?
+                            <p>{format(range.from, 'PPP')}–{format(range.to, 'PPP')}</p>
+                        :
+                        <p>Please select a range</p>
+                    } */}
                 </div>
             </div>
         </header>

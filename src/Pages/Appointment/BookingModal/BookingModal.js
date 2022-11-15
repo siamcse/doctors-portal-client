@@ -1,9 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import React from 'react';
+import React, { useContext } from 'react';
 import Swal from 'sweetalert2'
+import { AuthContext } from '../../../contexts/AuthProvider';
 
-const BookingModal = ({ treatment, selectedDate, setTreatment }) => {
+const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
     const { name: treatmentName, slots } = treatment;
+    const { user } = useContext(AuthContext);
     const date = format(selectedDate, 'PP');
 
     const handleBooking = event => {
@@ -26,13 +29,29 @@ const BookingModal = ({ treatment, selectedDate, setTreatment }) => {
 
         console.log(booking);
 
+        fetch('http://localhost:5000/bookings', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(booking)
+        })
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+                if (data.acknowledged) {
+                    setTreatment(null);
+                    Swal.fire(
+                        'Thank You!',
+                        `You booking an appointment on date ${date} at ${slot}!`,
+                        'success'
+                    );
+                    refetch();
+                }
+
+            })
+
         //modal exit after submit
-        setTreatment(null);
-        Swal.fire(
-            'Thank You!',
-            `You booking an appointment on date ${date} at ${slot}!`,
-            'success'
-        )
     }
     return (
         <>
@@ -51,9 +70,9 @@ const BookingModal = ({ treatment, selectedDate, setTreatment }) => {
                                 >{slot}</option>)
                             }
                         </select>
-                        <input name='name' type="text" placeholder="Full Name" className="input input-bordered w-full" required />
-                        <input name='phone' type="text" placeholder="Phone Number" className="input input-bordered w-full" required/>
-                        <input name='email' type="email" placeholder="Email" className="input input-bordered w-full" required/>
+                        <input name='name' defaultValue={user?.displayName} disabled type="text" placeholder="Full Name" className="input input-bordered w-full" required />
+                        <input name='email' defaultValue={user?.email} disabled type="email" placeholder="Email" className="input input-bordered w-full" required />
+                        <input name='phone' type="text" placeholder="Phone Number" className="input input-bordered w-full" />
                         <input className='btn btn-accent' type="submit" value="Submit" />
                     </form>
                 </div>
