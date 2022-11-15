@@ -1,28 +1,48 @@
+import { GoogleAuthProvider } from 'firebase/auth';
 import React, { useContext, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthProvider';
 
 const SignUp = () => {
-    const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    const { createUser, updateUser } = useContext(AuthContext);
+    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { createUser, popUpSignIn, updateUser } = useContext(AuthContext);
     const [signUpError, setSignUpError] = useState('');
+    const googleProvider = new GoogleAuthProvider();
+    const navigate = useNavigate();
+    const location = useLocation();
 
-    const handleLogin = (data,e) => {
-        e.target.reset();
+    const from = location.state?.from?.pathname || '/';
+
+    const handleLogin = (data, e) => {
+        setSignUpError('');
         console.log(data);
         createUser(data.email, data.password)
             .then(result => {
                 const user = result.user;
                 console.log(user);
                 toast.success('Successfully sign up!');
+                e.target.reset();
+                
                 const userInfo = {
                     displayName: data.name
                 }
                 updateUser(userInfo)
                     .then(() => { })
                     .catch(e => console.error(e))
+            })
+            .catch(e => {
+                console.error(e);
+                setSignUpError(e.message);
+            })
+    }
+    const handleGoogleSignIn = () => {
+        popUpSignIn(googleProvider)
+            .then(result => {
+                const user = result.user;
+                console.log(user);
+                navigate(from, { replace: true });
             })
             .catch(e => {
                 console.error(e);
@@ -61,7 +81,7 @@ const SignUp = () => {
                 </form>
                 <p className='text-center mt-3'>Already have an account? <Link className='text-secondary' to='/login'>Please Login</Link></p>
                 <div className="divider">OR</div>
-                <button className="btn btn-outline w-full">CONTINUE WITH GOOGLE</button>
+                <button onClick={handleGoogleSignIn} className="btn btn-outline w-full">CONTINUE WITH GOOGLE</button>
             </div>
         </div>
     );

@@ -1,14 +1,15 @@
-import { error } from 'daisyui/src/colors';
 import { GoogleAuthProvider } from 'firebase/auth';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthProvider';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [loginError, setLoginError] = useState('');
-    const { signIn, popUpSignIn } = useContext(AuthContext);
+    const { signIn, popUpSignIn, passwordReset } = useContext(AuthContext);
+    const resetEmail = useRef('');
     const googleProvider = new GoogleAuthProvider();
     const navigate = useNavigate();
     const location = useLocation();
@@ -42,6 +43,15 @@ const Login = () => {
                 setLoginError(e.message);
             })
     }
+    const handleResetPassword = () => {
+        const email = resetEmail.current.value;
+        console.log('reset email:', email);
+        passwordReset(email)
+            .then(() => {
+                toast.success('Password reset link sent to your email address.');
+            })
+            .catch(e => toast.error(e.message))
+    }
     return (
         <div className='h-[700px] flex justify-center items-center'>
             <div className='shadow-xl w-96 p-7'>
@@ -70,8 +80,9 @@ const Login = () => {
                             }
 
                         )} className="input input-bordered w-full max-w-md" />
-                        <label className="label"><span className="label-text text-xs">Forgot Password?</span>
-                        </label>
+
+                        <label htmlFor="reset-modal" className="cursor-pointer label-text text-xs">Forget Password?</label>
+
                         {errors.password && <p className='text-red-600 text-sm'>{errors.password?.message}</p>}
                         {loginError && <p className='text-red-600 text-sm'>{loginError}</p>}
                     </div>
@@ -81,6 +92,20 @@ const Login = () => {
                 <p className='text-center mt-3'>New to Doctors Portal? <Link className='text-secondary' to='/signup'>Create new account</Link></p>
                 <div className="divider">OR</div>
                 <button onClick={handleGoogleSignIn} className="btn btn-outline w-full">CONTINUE WITH GOOGLE</button>
+            </div>
+
+            {/* password reset modal  */}
+            <input type="checkbox" id="reset-modal" className="modal-toggle" />
+            <div className="modal">
+                <div className="modal-box relative">
+                    <label htmlFor="reset-modal" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
+                    <h3 className="text-lg font-bold">Reset your Password?</h3>
+                    <p className="py-4">Enter your email</p>
+                    <input ref={resetEmail} type="email" className='input input-bordered w-full max-w-xs' required /> <br />
+                    <div onClick={handleResetPassword} className='text-center'>
+                        <label htmlFor="reset-modal" className="btn mt-2">Submit</label>
+                    </div>
+                </div>
             </div>
         </div>
     );
