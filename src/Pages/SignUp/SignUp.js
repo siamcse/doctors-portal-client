@@ -24,14 +24,14 @@ const SignUp = () => {
                 console.log(user);
                 toast.success('Successfully sign up!');
                 e.target.reset();
-                
+
                 const userInfo = {
                     displayName: data.name
                 }
                 updateUser(userInfo)
                     .then(() => {
-                        navigate('/');
-                     })
+                        saveUser(data.name, data.email);
+                    })
                     .catch(e => console.error(e))
             })
             .catch(e => {
@@ -39,6 +39,34 @@ const SignUp = () => {
                 setSignUpError(e.message);
             })
     }
+
+    const saveUser = (name, email) => {
+        const user = { name, email };
+        fetch('http://localhost:5000/users', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        })
+            .then(res => res.json())
+            .then(data => {
+                getUserToken(email);
+            })
+    }
+
+    const getUserToken = email => {
+        fetch(`http://localhost:5000/jwt?email=${email}`)
+        .then(res=>res.json())
+        .then(data=>{
+            console.log(data);
+            if(data.accessToken){
+                localStorage.setItem('accessToken',data.accessToken);
+                navigate('/');
+            }
+        })
+    }
+
     const handleGoogleSignIn = () => {
         popUpSignIn(googleProvider)
             .then(result => {

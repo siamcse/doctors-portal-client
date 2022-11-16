@@ -48,6 +48,13 @@ const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
                     );
                     refetch();
                 }
+                else{
+                    Swal.fire(
+                        'Error',
+                        `${data.message}`,
+                        'error'
+                    );
+                }
 
             })
 
