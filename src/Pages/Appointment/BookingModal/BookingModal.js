@@ -5,7 +5,7 @@ import Swal from 'sweetalert2'
 import { AuthContext } from '../../../contexts/AuthProvider';
 
 const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
-    const { name: treatmentName, slots } = treatment;
+    const { name: treatmentName, slots, price } = treatment;
     const { user } = useContext(AuthContext);
     const date = format(selectedDate, 'PP');
 
@@ -24,12 +24,13 @@ const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
             slot,
             phone,
             email,
-            treatment: treatmentName
+            treatment: treatmentName,
+            price
         }
 
         console.log(booking);
 
-        fetch('http://localhost:5000/bookings', {
+        fetch('https://doctors-portal-server-sigma-seven.vercel.app/bookings', {
             method: 'POST',
             headers: {
                 'content-type': 'application/json'
@@ -48,7 +49,7 @@ const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
                     );
                     refetch();
                 }
-                else{
+                else {
                     Swal.fire(
                         'Error',
                         `${data.message}`,

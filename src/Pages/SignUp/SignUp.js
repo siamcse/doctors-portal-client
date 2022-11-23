@@ -4,20 +4,30 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthProvider';
+import useToken from '../../hooks/useToken';
 
 const SignUp = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const { createUser, popUpSignIn, updateUser } = useContext(AuthContext);
     const [signUpError, setSignUpError] = useState('');
+
+    const [createUserEmail, setCreateUserEmail] = useState('');
+    const [token] = useToken(createUserEmail);
+
     const googleProvider = new GoogleAuthProvider();
     const navigate = useNavigate();
     const location = useLocation();
 
     const from = location.state?.from?.pathname || '/';
 
-    const handleLogin = (data, e) => {
+    if (token) {
+        navigate('/');
+    }
+
+    const handleSignUp = (data, e) => {
         setSignUpError('');
         console.log(data);
+        //create user
         createUser(data.email, data.password)
             .then(result => {
                 const user = result.user;
@@ -25,11 +35,13 @@ const SignUp = () => {
                 toast.success('Successfully sign up!');
                 e.target.reset();
 
+                //update user
                 const userInfo = {
                     displayName: data.name
                 }
                 updateUser(userInfo)
                     .then(() => {
+                        //save user to database
                         saveUser(data.name, data.email);
                     })
                     .catch(e => console.error(e))
@@ -40,9 +52,23 @@ const SignUp = () => {
             })
     }
 
+    const handleGoogleSignIn = () => {
+        popUpSignIn(googleProvider)
+            .then(result => {
+                const user = result.user;
+                console.log(user);
+                saveUser(user.displayName, user.email);
+                // navigate(from, { replace: true });
+            })
+            .catch(e => {
+                console.error(e);
+                setSignUpError(e.message);
+            })
+    }
+    //save user to database
     const saveUser = (name, email) => {
         const user = { name, email };
-        fetch('http://localhost:5000/users', {
+        fetch('https://doctors-portal-server-sigma-seven.vercel.app/users', {
             method: 'POST',
             headers: {
                 'content-type': 'application/json'
@@ -51,41 +77,18 @@ const SignUp = () => {
         })
             .then(res => res.json())
             .then(data => {
-                getUserToken(email);
+                //set email for token verify
+                setCreateUserEmail(email);
             })
     }
 
-    const getUserToken = email => {
-        fetch(`http://localhost:5000/jwt?email=${email}`)
-        .then(res=>res.json())
-        .then(data=>{
-            console.log(data);
-            if(data.accessToken){
-                localStorage.setItem('accessToken',data.accessToken);
-                navigate('/');
-            }
-        })
-    }
-
-    const handleGoogleSignIn = () => {
-        popUpSignIn(googleProvider)
-            .then(result => {
-                const user = result.user;
-                console.log(user);
-                navigate(from, { replace: true });
-            })
-            .catch(e => {
-                console.error(e);
-                setSignUpError(e.message);
-            })
-    }
 
     return (
         <div className='h-[700px] flex justify-center items-center'>
             <div className='shadow-xl w-96 p-7'>
                 <h2 className='text-xl text-center'>Sign Up</h2>
 
-                <form onSubmit={handleSubmit(handleLogin)}>
+                <form onSubmit={handleSubmit(handleSignUp)}>
                     <div className="form-control w-full max-w-md mb-3">
                         <label className="label"><span className="label-text">Name</span>
                         </label>

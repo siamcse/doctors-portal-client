@@ -4,26 +4,40 @@ import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthProvider';
+import useToken from '../../hooks/useToken';
 
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     const [loginError, setLoginError] = useState('');
     const { signIn, popUpSignIn, passwordReset } = useContext(AuthContext);
-    const resetEmail = useRef('');
+
+    //token verify
+    const [loginEmail, setLoginEmail] = useState('');
+    const [token] = useToken(loginEmail);
+
+    const resetPassword = useRef(''); // for reset password
+
     const googleProvider = new GoogleAuthProvider();
     const navigate = useNavigate();
     const location = useLocation();
 
     const from = location.state?.from?.pathname || '/';
 
+    if (token) {
+        navigate(from, { replace: true });
+    }
+
     const handleLogin = data => {
         console.log(data);
         setLoginError('');
+        //sign in function
         signIn(data.email, data.password)
             .then(result => {
                 const user = result.user;
                 console.log(user);
-                navigate(from, { replace: true });
+                //set email for token verify
+                setLoginEmail(user.email);
+
             })
             .catch(e => {
                 console.error(e.message);
@@ -36,15 +50,32 @@ const Login = () => {
             .then(result => {
                 const user = result.user;
                 console.log(user);
-                navigate(from, { replace: true });
+                saveUser(user.displayName, user.email);
             })
             .catch(e => {
                 console.error(e);
                 setLoginError(e.message);
             })
     }
+    //save user to database for google sign in
+    const saveUser = (name, email) => {
+        const user = { name, email };
+        fetch('https://doctors-portal-server-sigma-seven.vercel.app/users', {
+            method: 'POST',
+            headers: {
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify(user)
+        })
+            .then(res => res.json())
+            .then(data => {
+                //set email for token verify
+                setLoginEmail(email);
+            })
+    }
+
     const handleResetPassword = () => {
-        const email = resetEmail.current.value;
+        const email = resetPassword.current.value;
         console.log('reset email:', email);
         passwordReset(email)
             .then(() => {
@@ -101,7 +132,7 @@ const Login = () => {
                     <label htmlFor="reset-modal" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
                     <h3 className="text-lg font-bold">Reset your Password?</h3>
                     <p className="py-4">Enter your email</p>
-                    <input ref={resetEmail} type="email" className='input input-bordered w-full max-w-xs' required /> <br />
+                    <input ref={resetPassword} type="email" className='input input-bordered w-full max-w-xs' required /> <br />
                     <div onClick={handleResetPassword} className='text-center'>
                         <label htmlFor="reset-modal" className="btn mt-2">Submit</label>
                     </div>
